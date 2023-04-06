@@ -4,26 +4,23 @@
 
 This carousel was created as a personal project (for my father's [portfolio website](antoniomusumeci.com)) and also on [my personal website](https://sites.google.com/view/emanuelemusumeci/blog/custom-bootstrap-carousel)). The idea was to use the carousel of a well-supported HTML framework ([Bootstrap 4](https://getbootstrap.com/docs/4.0/components/carousel/)) and enrich it with additional functionalities.
 
-<p>
-    <img src="img/anteprima_carosello_standard.png" alt>
-    <em>Standard bootstrap carousel with captions, slide indicators (horizontal lines on the bottom) and previous/next arrows</em>
-</p>
+| ![Standard bootstrap carousel with arrows, captions and indicators](img/anteprima_carosello_standard.png) | 
+|:--:| 
+| *Standard bootstrap carousel with captions, slide indicators (horizontal lines on the bottom) and previous/next arrows* |
 
 In its "native" form, the Bootstrap carousel, offers basic functionalities, such as: automatically rotating slides, a series of indicators at the bottom styled as dots and previous/next arrows.
 
 Google sites offers a very bare gallery carousel, without the possibility of showing previews., while I wanted to give a more "stylish" and "professional look to the gallery. 
 
-<p>
-    <img src="img/anteprima_carosello_google_sites.png" alt>
-    <em>Carousel embeddable in the Google Sites interface</em>
-</p>
+| ![Standard bootstrap carousel with arrows, captions and indicators](img/anteprima_carosello_google_sites.png) | 
+|:--:| 
+| *Carousel embeddable in the Google Sites interface* |
 
 I had to find a way to show pictures in a carousel without paying for a hosting service (we wanted to keep the project low-budget). So I opted to show images shared from a Google Drive folder and I wrote a script to generate HTML code automatically given a list of image links, to embed the images in the carousel.
 
-<p>
-    <img src="img/anteprima_carosello_custom.png" alt>
-    <em>The custom carousel in this repository</em>
-</p>
+| ![Standard bootstrap carousel with arrows, captions and indicators](img/anteprima_carosello_custom.png) | 
+|:--:| 
+| *The custom carousel in this repository* |
 
 Then I added several functionalities to improve the graphical appearance:
 * the default dot indicators are replaced with thumbnail previews, with a script to automatically center the thumbnail linked to the currently active slide and a script to change slide if a preview thumbnail is clicked
