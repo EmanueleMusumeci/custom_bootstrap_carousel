@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <title>Gallery</title>
+
+  <meta charset="utf-8">
+
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+  <script lang="">
+  /*
+    Inserts images from imageShareData into the carousel
+  */
+
+        //Insert here the list of image URLs (obtained by selecting all the images in drive and then right-click -> Share -> Copy links)
+        imageShareData = [
+        ["https://drive.google.com/file/d/1-GbH6rtA2TsuWSKtE_KVvDFrurIhDe-W/view?usp=sharing", "Title", "Caption"],
+        ["https://drive.google.com/file/d/1AbDVS1tKO8tBkNyWbX-EYq8fHrtHcXoG/view?usp=sharing", "Title", "Caption"],
+        ["https://drive.google.com/file/d/1CUkrkxwBnHExSthlqFAd6hfeRZWvx3mV/view?usp=sharing", "Title", "Caption"],
+        ["https://drive.google.com/file/d/1G5vokA4E7Noyd1RxbP65J10hurIJQ_0n/view?usp=sharing", "Title", "Caption"],
+        ["https://drive.google.com/file/d/1HaMTjtKa8_o_70h0XFP69HBGMOgzAwE1/view?usp=sharing", "Title", "Caption"],
+        ["https://drive.google.com/file/d/1KjqkI8rtuzdlpnsL1vXqzPfDOx7kjWum/view?usp=sharing", "Title", "Caption"],
+        ["https://drive.google.com/file/d/1Nv_VKRWIBML1Hit8I3j-zCt2yzK352w3/view?usp=sharing", "Title", "Caption"],
+        ["https://drive.google.com/file/d/1X8ftfbKV2br9CDLkBkQnzCdnnIAXuFxF/view?usp=sharing", "Title", "Caption"],
+        ["https://drive.google.com/file/d/1bNWFvAW1YIhyvbvOOS4obJ5NViGnn0Vx/view?usp=sharing", "Title", "Caption"],
+        ["https://drive.google.com/file/d/1bbhTN6nuquC4IcAa23rVE5QPNtCzavFh/view?usp=sharing", "Title", "Caption"],
+        ["https://drive.google.com/file/d/1lNhqu7POwV4QCsWw8jN8P6KPvd9mIHcB/view?usp=sharing", "Title", "Caption"],
+        ["https://drive.google.com/file/d/1yRqXW3YWMhP7l489-2EboF3VbX6UtjJH/view?usp=sharing", "Title", "Caption"]
+        ];
+
+
+        //given the prototype link: 
+        //  https://drive.google.com/uc?export=view&id=YourIdHere
+        //we need to replace "YourIdHere" with the image ID (located between "/d/"" and "/view?") 
+        linkPrototype = "https://drive.google.com/uc?export=view&id=YourIdHere";
+        imageCarouselData = [];
+        for(var i=0; i<imageShareData.length; i++) {
+            currentURL = imageShareData[i][0];
+            
+            start = currentURL.indexOf("/d/") + 3;
+            end = currentURL.indexOf("/view?");
+            imageID = currentURL.substring(start, end);
+            carouselLink = linkPrototype.replace("YourIdHere", imageID)
+            imageCarouselData.push([carouselLink, imageShareData[i][1], imageShareData[i][2]])
+        }
+
+        console.log(imageCarouselData)
+
+        var isCarouselPaused = false;
+
+        $(document).ready(function(){  
+            for(var i=0 ; i< imageCarouselData.length ; i++) {
+                $('<div id="carousel-slide-'+i+'" class="item"> \
+                    <a href="'+imageCarouselData[i][0]+'" target="_blank"> \
+                      <img id="carousel-slide-img-'+i+'" src="'+imageCarouselData[i][0]+'" />\
+                    </a>\
+                    <div class="carousel-caption">\
+                      <p class="caption-title">'+imageCarouselData[i][1]+'</p>\
+                      <p class="caption-subtitle">'+imageCarouselData[i][2]+'</p>\
+                    </div>\
+                  </div>').appendTo('#carousel-image-container');
+                $('<li id="carousel-thumbnail-'+i+'" class="list-inline-item"> \
+                      <a class="selected" data-slide-to="'+i+'" data-target="#carousel-viewport"> \
+                        <img src="'+imageCarouselData[i][0]+'" class="img-fluid" /> \
+                      </a> \
+                    </li>').appendTo('.carousel-indicators')
+            }
+            $('.item').first().addClass('active');
+            $('#carousel-thumbnail-0').addClass('active');
+
+
+            //Setup carousel but paused
+            $("#carousel-viewport").carousel("pause");
+            isCarouselPaused = true;
+
+          //Setup carousel, show arrows and add swipe gestures events only when first image is fully loaded
+          //First hide arrows
+          $(".carousel-control-prev, .carousel-control-next, .carousel-control-prev-icon, .carousel-control-next-icon").hide();
+          //Then register a handler for when the first image is fully loaded that shows arrows
+          $("#carousel-slide-img-0").on('load', function() {
+          
+            console.log("Image loaded")
+            //Unpause carousel
+            $("#carousel-viewport").carousel({
+                interval: 5000,
+                pause: "hover",
+                touch: true,
+                keyboard: true
+            });
+            isCarouselPaused = false;
+          
+            //Carousel slide event:
+            //- Scroll thumbnails bar
+            $('#carousel-viewport').on('slide.bs.carousel', function (evt) {
+              if(evt != null)
+              {
+                //console.log(evt);
+                centerThumbnailsOnActiveSlide(evt);
+              }
+            });
+          
+            $(".carousel-control-prev, .carousel-control-next, .carousel-control-prev-icon, .carousel-control-next-icon").show();
+            
+            //Register carousel action for mobile finger swipe
+            //Taken from: https://stackoverflow.com/questions/21349984/how-to-make-bootstrap-carousel-slider-use-mobile-left-right-swipe
+            $('#carousel-viewport').on('touchstart', function(event){
+              console.log("Swipe on carousel")
+
+              //Pause the carousel
+              $("#carousel-viewport").carousel("pause")
+              isCarouselPaused = true
+              
+              //Perform "prev" or "next" carousel action depending on swipe direction
+              const xClick = event.originalEvent.touches[0].pageX;
+              $(this).one('touchmove', function(event){
+                  const xMove = event.originalEvent.touches[0].pageX;
+                  const sensitivityInPx = 5;
+
+                  if( Math.floor(xClick - xMove) > sensitivityInPx ){
+                      $(this).carousel('next');
+                  }
+                  else if( Math.floor(xClick - xMove) < -sensitivityInPx ){
+                      $(this).carousel('prev');
+                  }
+              });
+
+              $(this).on('touchend', function(){
+                  $(this).off('touchmove');
+              });
+          });
+        });
+
+          //Disable the carousel auto-cycle when the user clicks on the navigation arrows
+          $(".carousel-control-prev, .carousel-control-next").on('click', function() {
+            console.log("Carousel control clicked")
+            $("#carousel-viewport").carousel("pause");
+            isCarouselPaused = true
+          });
+            
+
+          //Pause carousel when windows is out of focus
+          $(window).on('focusout', function() {
+            //We keep the old value for isCarouselPaused
+            $("#carousel-viewport").carousel("pause");
+          });
+
+          $(window).on('focusin', function() {
+            if(isCarouselPaused)
+            {
+              $("#carousel-viewport").carousel("pause");
+            }
+            else
+            {
+              //Unpause carousel
+              $("#carousel-viewport").carousel({
+                  interval: 5000,
+                  pause: "hover",
+                  touch: true,
+                  keyboard: true
+              });
+            }
+          });
+
+
+          //Handle smartphone orientation change by reloading the page layout
+          /*$(window).on("orientationchange", function() {
+            window.location.reload();
+          });*/
+
+          /*window.addEventListener('orientationchange', function () {
+            var originalBodyStyle = getComputedStyle(document.body).getPropertyValue('display');
+            document.body.style.display='none';
+            setTimeout(function () {
+              document.body.style.display = originalBodyStyle;
+            }, 10);
+          });*/
+
+          /*$(window).on('orientationchange', function() {
+            document.body.style.display='none';
+            document.body.offsetHeight; //cause a reflow
+            document.body.style.display='block'; //cause a repaint
+          });*/ 
+
+          function getCurrentCarouselSlideNumber()
+          {
+            return $('#carousel-viewport').find('.active').index();
+          };
+
+          function getNextCarouselSlideNumber(evt)
+          {
+            return $(evt.relatedTarget).index();
+          };
+
+          function computeThumbnailScrollX(currentSlideNumber, nextSlideNumber)
+          {
+            //Find position of the carousel thumbnails container
+            thumbnailContainerLeft = $("#carousel-thumbnails").position().left;
+            thumbnailContainerWidth = $("#carousel-thumbnails").width();
+            thumbnailContainerXScroll = $("#carousel-thumbnails").scrollLeft();
+            
+            //Find thumbnail for next carousel slide
+            nextSlideThumbnailXPosition = $("#carousel-thumbnail-"+nextSlideNumber).position().left;
+            nextSlideOuterWidth = $("#carousel-thumbnail-"+nextSlideNumber).outerWidth();
+            
+            //console.log(nextSlideThumbnailXPosition)
+            //console.log(thumbnailContainerXScroll)
+            //console.log(nextSlideThumbnailXPosition)
+            //console.log(nextSlideThumbnailXPosition)
+
+            return (thumbnailContainerXScroll + (nextSlideThumbnailXPosition + nextSlideOuterWidth/2) - (thumbnailContainerLeft + thumbnailContainerWidth/2));
+          };
+
+          function centerThumbnailsOnActiveSlide(evt)
+          {
+
+            //Find next active slide number
+            currentSlideNumber = getCurrentCarouselSlideNumber(evt);
+            nextSlideNumber = getNextCarouselSlideNumber(evt);
+            //console.log(nextSlideNumber);
+
+            $('#carousel-thumbnail-'+currentSlideNumber).removeClass('active');
+            $('#carousel-thumbnail-'+nextSlideNumber).addClass('active');
+            
+            //Compute scroll amount
+            //scrollByX = computeThumbnailScrollX(currentSlideNumber, nextSlideNumber);
+            scrollToX = computeThumbnailScrollX(currentSlideNumber, nextSlideNumber);
+            //console.log(scrollToX);
+
+            //Animate the scroll to that slide thumbnail
+            $('#carousel-thumbnails').animate( { 
+              scrollLeft: scrollToX
+            },'slow');
+            
+          }
+          
+        });
+        
+  </script>
+
+  <style>
+    html,
+    body {
+      display:flex;
+      justify-content: center;
+      padding: 0;
+      margin: 0;
+      height: 100vh;
+      min-height: 100vh;
+      background: transparent;
+      overflow:visible;
+    }
+    
+        /* Overall container: contains both the carousel viewport and the previews */
+        #gallery-container {
+          display:flex;
+          justify-content: center;
+          flex-direction: column;
+          padding: 0;
+          margin-left: 5%;
+          margin-right: 5%;
+          height: 100%;
+        }
+
+            /* Actual carousel, contains the slides container and the left/right arrows */
+            #carousel-viewport {
+              width: 100%;
+
+            border: 0.1em solid gray
+            }
+
+              .carousel-control-prev, .carousel-control-next {
+                
+                position: absolute;
+                width: 12%; 
+                height: 100%;
+                top:0; 
+                
+                z-index: 9999;
+                                     
+              } 
+              
+              .carousel-control-prev {
+                animation-duration: 0.4s;
+                animation-name: FadeOutPrev;
+                left:0;
+                padding-left: 1.5vw;
+              }
+              
+              .carousel-control-next {
+                  animation-duration: 0.4s;
+                animation-name: FadeOutNext;
+                right:0;
+                padding-right: 1.5vw;
+              }
+
+              #carousel-viewport:hover .carousel-control-prev,
+              #carousel-viewport:hover .carousel-control-next
+              {
+                  visibility: visible;
+                  animation-duration: 0.4s;
+                  transition-timing-function: linear;
+              }
+
+              .carousel:hover .carousel-control-prev
+              {
+                  animation-name: FadeInPrev;
+                  left:0;
+                  padding-left: 0;
+                  background: linear-gradient(90deg, rgba(0,0,66,100) 25%, rgba(0,0,0,0) 100%);
+              }
+
+              .carousel:hover .carousel-control-next
+              {
+                  animation-name: FadeInNext;
+                  right:0;
+                  padding-right: 0;
+                  background: linear-gradient(90deg, rgba(0,0,0,0) 25%, rgba(0,0,66,100) 100%);
+              }
+
+              @keyframes FadeInPrev
+              {
+                  0%
+                  {
+                      opacity: 1;
+                      padding-left: 1.5vw;
+                  }
+                  100%
+                  {
+                      opacity: 1;
+                      padding-left: 0px;
+                      background: linear-gradient(90deg, rgba(0,0,66,100) 25%, rgba(0,0,0,0) 100%);
+                  }
+              }
+
+              @keyframes FadeInNext
+              {
+                  0%
+                  {
+                      opacity: 1;
+                      padding-right: 1.5vw;
+                  }
+                  100%
+                  {
+                      opacity: 1;
+                      padding-right: 0px;
+                      background: linear-gradient(90deg, rgba(0,0,0,0) 25%, rgba(0,0,66,100) 100%);
+                  }
+              }
+              
+              @keyframes FadeOutPrev
+              {
+                  0%
+                  {
+                      opacity: 1;
+                      padding-left: 0px;
+                      background: linear-gradient(90deg, rgba(0,0,66,100) 25%, rgba(0,0,0,0) 100%);
+                  }
+                  100%
+                  {
+                      opacity: 1;
+                      padding-left: 1.5vw;
+                  }
+              }
+
+              @keyframes FadeOutNext
+              {
+                  0%
+                  {
+                      opacity: 1;
+                      padding-right: 0px;
+                      background: linear-gradient(90deg, rgba(0,0,0,0) 25%, rgba(0,0,66,100) 100%);
+                  }
+                  100%
+                  {
+                      opacity: 1;
+                      padding-right: 1.5vw;
+                  }
+              }
+                  .arrow-wrapper {
+                    position: relative;
+
+                    /*Center vertically the wrapper (the element will translate itself back half its height)*/
+                    top: 50%;
+                    transform: translateY(-50%);
+                  }
+                  /* ARROWS INSIDE CIRCLE */
+                  /*
+                  .carousel-control-next-icon, .carousel-control-prev-icon {
+                    display: inline-block;
+                    width: 4vh;
+                    height: 4vh;
+                    background: no-repeat 50%/100% 100%;
+                    background-color: #686161 !important;
+                    border-radius: 100%;
+                    box-shadow: 0px 0px 7px 2px #000000a1;
+                    background-size: initial !important;
+                    z-index: 10; 
+
+                    font: 4vh white;
+                  }*/
+
+                  /* ONLY ARROWS */
+                  .carousel-control-next-icon, .carousel-control-prev-icon {
+                    display: relative;
+                    opacity: 0.6;
+                    
+                    z-index: 0;
+
+                    font-size: 6vh;
+                    color: #ffffff;
+                  }
+                  
+                  .carousel:hover .carousel-control-prev-icon, .carousel:hover .carousel-control-next-icon
+                  {
+                    opacity: 1;
+                  }
+
+                  .carousel-control-prev-icon {
+                    left: 0%;
+                  }
+
+                  .carousel-control-next-icon {
+                    right: 0%;
+                  }
+
+                  /* Remove link underline from arrow */
+                  .carousel-control-prev:hover, .carousel-control-next:hover { text-decoration: none; } 
+
+
+                /* Slides container, should be located between the two left/right arrows */
+                #carousel-image-container {
+                  width: 100%;
+                  z-index: 10;
+                }
+
+                    /* Class representing the container of a single carousel slide (Class name is hardcoded and used by the bootstrap carousel)*/ 
+                    .item {
+                      height:100%;
+                    }
+
+                        /* Each carousel image is clickable, so it is contained inside a link */
+                        .item a {
+                          height:100%;
+                        }
+                        
+                            /* Carousel slide image*/
+                            .item a img {
+                              position: relative;
+                              height:100%;
+                            }
+
+                            /* Carousel slide caption */
+                            .item a .carousel-caption {
+                              position:relative;
+
+                              bottom:3%;
+                              left:0;
+                              width:100%;
+                              margin:0;
+                              padding:1%;
+
+                              color:#fff;                      
+                              opacity: 0.8;
+                            }
+
+                                /* Each caption contains both a title (for the slide title) and a subtitle (for the description) */
+                                .caption-title {
+                                  visibility: hidden;
+                                  margin: 0 0;
+
+                                  font-size: 4vh;     
+                                  text-shadow: 0.8vh 0.8vh 0.3vh grey; 
+  
+                                }
+
+                                .caption-subtitle {
+                                  visibility: hidden;
+                                  margin: 0 0;
+                                  
+                                  color:#dddddd;      
+                                  font-size: 3vh;   
+                                  text-shadow: 0.8vh 0.8vh 0.3vh grey;    
+                                }
+
+              /* Class representing the carousel indicators (the dots below the carousel) here modified to contain thumbnail previews
+              (Class name is hardcoded and used by the bootstrap carousel)*/ 
+            #carousel-thumbnails-viewport {
+                  position: relative;
+                  margin-top: 4vh;
+                  width: 90%;
+                  margin-left: 5%;
+            }
+                #carousel-thumbnails {
+                  position: relative;
+                  
+                  left:0;
+                  margin-left:0;
+                  padding-left:0;
+
+                  min-height:100%;
+                  width: 100%;
+                  overflow-x:scroll;
+                  overflow-y:visible;
+                  white-space:nowrap; !important
+                  
+                  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+                  scrollbar-width: none;  /* Firefox */
+                }
+                
+                #carousel-thumbnails::-webkit-scrollbar { 
+                  display: none;  /* Safari and Chrome */
+                }
+            
+                #carousel-thumbnails li,
+                #carousel-thumbnails li.active  {
+                  max-width: 33.333%;
+                  min-width: 25%;
+                  height: 30%;
+                  margin: 0;
+                  border-radius: 0;
+                  border: 20px;
+                  border-color: white;
+                  background: transparent;
+                  
+                  display:inline-block;
+                  *display:inline;/* For IE7*/
+                  *zoom:1;/* For IE7*/
+                  white-space:normal;
+
+                }
+
+                #carousel-thumbnails img {
+                  display: block;
+                  opacity: 1;
+                  width: 100%;
+                  object-fit: scale-down;
+                  background: none;
+                  border-color: none;
+                  box-shadow: none;
+                }
+
+                #carousel-thumbnails li.active img {
+                  background: none;
+                  border-color:rgba(255, 255, 255, 1);
+                  box-shadow: 0 5px 15px rgba(0, 255, 255, .8);
+                  width: 100%;
+                  margin-left:0%;
+                  z-index: 11;
+                }
+
+                #carousel-thumbnails li:hover img {
+                  color: rgba(255, 255, 255, 1);
+                  box-shadow: 0 5px 15px rgba(255, 255, 255, .8);
+                  z-index: 10;
+                }
+
+  </style>
+
+</head>
+
+<body>
+  <!-- Prototype from https://mdbootstrap.com/docs/standard/extended/carousel-with-thumbnails/ -->
+  <div id="gallery-container">
+    <div id="carousel-viewport" class="carousel slide" data-ride="carousel" align="center" data-bs-pause="true">
+      <!-- Slides -->
+      <div id="carousel-image-container" class="carousel-inner"></div>
+      <!-- Left arrow -->
+      <a class="carousel-control-prev" href="#carousel-viewport" role="button" data-slide="prev">
+        <div class="arrow-wrapper">
+          <span class="carousel-control-prev-icon" >&#8249</span>
+          <span class="sr-only">Next</span>
+        </div>
+      </a>
+      <!-- Right arrow -->      
+      <a class="carousel-control-next" href="#carousel-viewport" role="button" data-slide="next">
+        <div class="arrow-wrapper">
+          <span class="carousel-control-next-icon" >&#8250</span>
+          <span class="sr-only">Previous</span>
+        </div>
+      </a>
+    </div>
+    <!-- Thumbnails -->
+    <div id="carousel-thumbnails-viewport">
+      <ol id="carousel-thumbnails" class="carousel-indicators list-inline"></ol>
+    </div>
+    
+  </div>
+
+</body>
+
+</html>
+

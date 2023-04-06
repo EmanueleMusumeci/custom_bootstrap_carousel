@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <title>Bootstrap Example</title>
+
+  <meta charset="utf-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+  <script lang="">
+
+        //Insert here the list of image URLs (obtained by selecting all the images in drive and then right-click -> Share -> Copy links)
+        imageShareLinks = [
+        "https://drive.google.com/file/d/1-GbH6rtA2TsuWSKtE_KVvDFrurIhDe-W/view?usp=sharing",
+        "https://drive.google.com/file/d/1AbDVS1tKO8tBkNyWbX-EYq8fHrtHcXoG/view?usp=sharing",
+        "https://drive.google.com/file/d/1CUkrkxwBnHExSthlqFAd6hfeRZWvx3mV/view?usp=sharing",
+        "https://drive.google.com/file/d/1G5vokA4E7Noyd1RxbP65J10hurIJQ_0n/view?usp=sharing",
+        "https://drive.google.com/file/d/1HaMTjtKa8_o_70h0XFP69HBGMOgzAwE1/view?usp=sharing",
+        "https://drive.google.com/file/d/1KjqkI8rtuzdlpnsL1vXqzPfDOx7kjWum/view?usp=sharing",
+        "https://drive.google.com/file/d/1Nv_VKRWIBML1Hit8I3j-zCt2yzK352w3/view?usp=sharing",
+        "https://drive.google.com/file/d/1X8ftfbKV2br9CDLkBkQnzCdnnIAXuFxF/view?usp=sharing",
+        "https://drive.google.com/file/d/1bNWFvAW1YIhyvbvOOS4obJ5NViGnn0Vx/view?usp=sharing",
+        "https://drive.google.com/file/d/1bbhTN6nuquC4IcAa23rVE5QPNtCzavFh/view?usp=sharing",
+        "https://drive.google.com/file/d/1lNhqu7POwV4QCsWw8jN8P6KPvd9mIHcB/view?usp=sharing",
+        "https://drive.google.com/file/d/1yRqXW3YWMhP7l489-2EboF3VbX6UtjJH/view?usp=sharing"
+        ];
+
+
+        //given the prototype link: 
+        //  https://drive.google.com/uc?export=view&id=YourIdHere
+        //we need to replace "YourIdHere" with the image ID (located between "/d/"" and "/view?") 
+        linkPrototype = "https://drive.google.com/uc?export=view&id=YourIdHere";
+        imageCarouselLinks = [];
+        for(var i=0; i<imageShareLinks.length; i++) {
+            currentURL = imageShareLinks[i]
+            start = currentURL.indexOf("/d/") + 3;
+            end = currentURL.indexOf("/view?");
+            imageID = currentURL.substring(start, end);
+            carouselLink = linkPrototype.replace("YourIdHere", imageID)
+            imageCarouselLinks.push(carouselLink)
+        }
+
+
+        $(document).ready(function(){  
+            for(var i=0 ; i< imageCarouselLinks.length ; i++) {
+                $('<div class="item"><img src="'+imageCarouselLinks[i]+'"><div class="carousel-caption"></div>   </div>').appendTo('.carousel-inner');
+                $('<li data-target="#carousel-example-generic" data-slide-to="'+i+'"></li>').appendTo('.carousel-indicators')
+
+            }
+            $('.item').first().addClass('active');
+            $('.carousel-indicators > li').first().addClass('active');
+            $('#carousel-example-generic').carousel();
+        });
+  </script>
+
+  <style>
+
+    .carousel-caption {
+        text-shadow:0px 0px 8px rgba(0,0,0,1);color:#fff;
+    }
+    h3,p{
+        font-weight:900
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+    <div id="dynamic-carousel-gallery" class="carousel slide" data-ride="carousel">
+        <!-- Indicators -->
+        <ol class="carousel-indicators"></ol>        
+        <!-- Wrapper for slides -->
+        <div class="carousel-inner"></div>
+        <!-- Controls -->
+        <a class="left carousel-control" href="#carousel-example-generic" data-slide="prev">
+          <span class="glyphicon glyphicon-chevron-left"></span>
+        </a>
+        <a class="right carousel-control" href="#carousel-example-generic" data-slide="next">
+          <span class="glyphicon glyphicon-chevron-right"></span>
+        </a>
+      </div>
+
+</body>
+
+</html>
